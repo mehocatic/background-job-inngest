@@ -2,7 +2,7 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { serve } from "inngest/express";
 import { inngest } from "./inngest/client.js";
-import { sayHello, makeReport } from "./inngest/functions.js";
+import { sayHello, makeReport, heartbeat } from "./inngest/functions.js";
 import { reports } from "./reports-store.js";
 
 const app = express();
@@ -17,7 +17,7 @@ app.get("/health", (req, res) => {
 // Inngest calls this endpoint to discover and run our functions
 app.use(
   "/api/inngest",
-  serve({ client: inngest, functions: [sayHello, makeReport] })
+  serve({ client: inngest, functions: [sayHello, makeReport, heartbeat] })
 );
 
 // The fast door: accept the request, hand the slow work to Inngest, return instantly.

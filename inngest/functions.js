@@ -35,3 +35,20 @@ export const makeReport = inngest.createFunction(
     });
   }
 );
+
+// Nothing triggers this but the clock. Every minute it counts how reports
+// are doing - a real version of this would run daily, not every minute.
+export const heartbeat = inngest.createFunction(
+  { id: "heartbeat", triggers: { cron: "* * * * *" } },
+  async ({ step }) => {
+    await step.run("log-summary", () => {
+      const counts = { pending: 0, done: 0, failed: 0 };
+      for (const report of reports.values()) {
+        counts[report.status] = (counts[report.status] ?? 0) + 1;
+      }
+      console.log(
+        `[heartbeat] pending: ${counts.pending}, done: ${counts.done}, failed: ${counts.failed}`
+      );
+    });
+  }
+);
