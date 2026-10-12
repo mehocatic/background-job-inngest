@@ -65,6 +65,10 @@ _[Add here: screenshot of the Inngest dashboard at localhost:8288 showing a comp
 
 A missing `topic` is a wrong input and gets rejected at the door with a `400` — no event is ever sent, because retrying bad input would just fail the same way three times. A thrown error inside `build-report` (the `"fail"` topic) is treated as a wrong *moment* — a hiccup — so Inngest retries it with backoff instead.
 
+## Stretch — idempotency
+
+`build-report` checks the saved status before doing anything: if it's already `"done"`, the step returns immediately. Jobs must survive running twice because at-least-once delivery is the deal every job system makes — a network hiccup or a retry can redeliver the same event, and without this check a redelivered `report/requested` would silently overwrite a finished report (or, with a real side effect like sending an email, send it twice).
+
 ## Stage 4 note — cron expressions
 
 - Every day at 08:00: `0 8 * * *`

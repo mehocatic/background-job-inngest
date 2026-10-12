@@ -24,12 +24,16 @@ export const makeReport = inngest.createFunction(
     await step.sleep("do-the-slow-work", "8s");
 
     await step.run("build-report", () => {
+      // Idempotency: the same event can be delivered twice (retries, redelivery).
+      // Checking the saved status means a re-run can't build the report twice.
+      const report = reports.get(id);
+      if (report.status === "done") return;
+
       // topic "fail" exists purely to demo retries - see Stage 3 checkpoint
       if (topic === "fail") {
         throw new Error("The report oven is broken!");
       }
 
-      const report = reports.get(id);
       report.status = "done";
       report.result = `Report on "${topic}": ${topic} is a great subject, 3 key insights found.`;
     });
